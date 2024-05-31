@@ -9,6 +9,7 @@ Mind pegs are mental hooks or cues that aid in recalling information. Each numbe
 Players associate each number with a specific word or image on the card. For example, when they see the number 1, they connect it with the word "Flag" or an image of a flag on the card.
 By linking numbers to familiar words or images, players create a mental peg system that simplifies the process of remembering matching pairs during gameplay.
 Visual pegs are employed for numbers 1 to 10 and number 20, while auditory or sound-based pegs are used for numbers 11 to 19. For instance, "10+2 Shoe" associates the number 12 with the word "Shoe."
+
 Mnemonics:
 
 Mnemonics are memory aids that facilitate information recall by creating associations, patterns, or rhymes.
