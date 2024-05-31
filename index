@@ -1,1 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Matching Game</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        :root {
+            --background-color-light: #eef2f7;
+            --background-color-dark: #2e3a46;
+            --card-color-light: #ffffff;
+            --card-color-dark: #4a4a4a;
+            --text-color-light: #333;
+            --text-color-dark: #f0f0f0;
+            --match-color-light: #32CD32;
+            --match-color-dark: #FF8C00;
+            --button-color-light: #87CEEB;
+            --button-color-dark: #333;
+            --button-hover-light: #6495ED;
+            --button-hover-dark: #555;
+            --primary-font: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            font-family: var(--primary-font);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background: var(--background-color-light);
+            transition: background-color 0.3s;
+            background-image: linear-gradient(135deg, #e0e7ff 25%, transparent 25%), linear-gradient(225deg, #e0e7ff 25%, transparent 25%), linear-gradient(45deg, #e0e7ff 25%, transparent 25%), linear-gradient(315deg, #e0e7ff 25%, #eef2f7 25%);
+            background-position: 20px 0, 20px 0, 0 0, 0 0;
+            background-size: 40px 40px;
+        }
+
+        body.dark-mode {
+            background: var(--background-color-dark);
+            color: var(--text-color-dark);
+        }
+
+        #timer {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: var(--text-color-light);
+        }
+
+        body.dark-mode #timer {
+            color: var(--text-color-dark);
+        }
+
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(8, 80px);
+            grid-template-rows: repeat(5, 80px);
+            gap: 10px;
+        }
+
+        .card {
+            width: 80px;
+            height: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--card-color-light);
+            font-size: 16px;
+            color: var(--text-color-light);
+            cursor: pointer;
+            border-radius: 10px;
+            transition: transform 0.3s, background-color 0.3s, box-shadow 0.3s;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        body.dark-mode .card {
+            background-color: var(--card-color-dark);
+            color: var(--text-color-dark);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+        }
+
+        .card.flipped {
+            background-color: #ffffff;
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .card.word {
+            font-family: Georgia, serif;
+            font-weight: bold;
+            color: #32CD32;
+        }
+
+        .card.number {
+            font-family: Arial, sans-serif;
+            font-style: italic;
+            color: #FF8C00;
+        }
+
+        .card.match {
+            background-color: var(--match-color-light);
+            color: #ffffff;
+        }
+
+        body.dark-mode .card.match {
+            background-color: var(--match-color-dark);
+        }
+
+        .hidden {
+            visibility: hidden;
+        }
+
+        #controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        #theme-toggle, #difficulty, #hint, #info {
+            cursor: pointer;
+            font-size: 24px;
+            color: var(--text-color-light);
+            background-color: var(--button-color-light);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body.dark-mode #theme-toggle, 
+        body.dark-mode #difficulty, 
+        body.dark-mode #hint, 
+        body.dark-mode #info {
+            background-color: var(--button-color-dark);
+            color: var(--text-color-dark);
+        }
+
+        #info-content {
+            display: none;
+            position: absolute;
+            top: 60px;
+            right: 10px;
+            background-color: #ffffff;
+            color: #000;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        #info:hover + #info-content,
+        #info-content:hover {
+            display: block;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: var(--button-color-light);
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        body.dark-mode button {
+            background-color: var(--button-color-dark);
+        }
+
+        button:hover {
+            background-color: var(--button-hover-light);
+            transform: translateY(-2px);
+        }
+
+        body.dark-mode button:hover {
+            background-color: var(--button-hover-dark);
+        }
+
+        .flashed {
+            background-color: yellow !important;
+            color: black !important;
+        }
+
+        .icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="timer">Time elapsed: 00:00</div>
+    <div id="game-board"></div>
+    <button onclick="startGame()">Reset Game</button>
+    <div id="controls">
+        <div id="theme-toggle">🌙</div>
+        <div id="difficulty">⚙️</div>
+        <div id="hint">💡</div>
+        <div id="info">ℹ️</div>
+        <div id="info-content">
+            <ul>
+                <li>1 - Flag</li>
+                <li>2 - Swan</li>
+                <li>3 - Lady</li>
+                <li>4 - Boat</li>
+                <li>5 - Wheelchair</li>
+                <li>6 - Apple</li>
+                <li>7 - Boomerang</li>
+                <li>8 - Racetrack</li>
+                <li>9 - Walking stick</li>
+                <li>10 - Laurel and Hardy</li>
+                <li>11 - 10+1 Gun</li>
+                <li>12 - 10+2 Shoe</li>
+                <li>13 - 10+3 Bee</li>
+                <li>14 - 10+4 Door</li>
+                <li>15 - 10+5 Dive</li>
+                <li>16 - 10+6 Licks</li>
+                <li>17 - 10+7 Heaven</li>
+                <li>18 - 10+8 Gate</li>
+                <li>19 - 10+9 Wine</li>
+                <li>20 - Fire</li>
+            </ul>
+        </div>
+    </div>
+    <script>
+        const words = [
+            { text: 'Flag', number: '1', icon: 'fa-flag' },
+            { text: 'Swan', number: '2', icon: 'fa-dove' },
+            { text: 'Lady', number: '3', icon: 'fa-female' }, // Treats as Breasts
+            { text: 'Boat', number: '4', icon: 'fa-ship' },
+            { text: 'Wheelchair', number: '5', icon: 'fa-wheelchair' },
+            { text: 'Apple', number: '6', icon: 'fa-apple-alt' },
+            { text: 'Boomerang', number: '7', icon: 'fa-undo' },
+            { text: 'Racetrack', number: '8', icon: 'fa-road' },
+            { text: 'Walking stick', number: '9', icon: 'fa-cane' },
+            { text: 'Laurel and Hardy', number: '10', icon: 'fa-theater-masks' },
+            { text: '10+1 Gun', number: '11', icon: 'fa-crosshairs' },
+            { text: '10+2 Shoe', number: '12', icon: 'fa-shoe-prints' },
+            { text: '10+3 Bee', number: '13', icon: 'fa-bug' },
+            { text: '10+4 Door', number: '14', icon: 'fa-door-closed' },
+            { text: '10+5 Dive', number: '15', icon: 'fa-swimmer' },
+            { text: '10+6 Licks', number: '16', icon: 'fa-ice-cream' },
+            { text: '10+7 Heaven', number: '17', icon: 'fa-cloud' },
+            { text: '10+8 Gate', number: '18', icon: 'fa-door-open' },
+            { text: '10+9 Wine', number: '19', icon: 'fa-wine-glass' },
+            { text: 'Fire', number: '20', icon: 'fa-fire' },
+        ];
+
+        let cards = [];
+        let flippedCards = [];
+        let matchedCards = 0;
+        let timer;
+        let startTime;
+        let hintCount = 3;
+        let difficulty = 20;
+
+        function startGame() {
+            const gameBoard = document.getElementById('game-board');
+            gameBoard.innerHTML = '';
+            cards = shuffle([...words.slice(0, difficulty), ...words.slice(0, difficulty).map(word => ({ text: word.number, number: word.number }))]);
+            flippedCards = [];
+            matchedCards = 0;
+            hintCount = 3;
+            document.getElementById('hint').textContent = `💡 (${hintCount})`;
+
+            cards.forEach((card, index) => {
+                const cardElement = document.createElement('div');
+                cardElement.classList.add('card');
+                cardElement.dataset.index = index;
+                cardElement.addEventListener('click', flipCard);
+                gameBoard.appendChild(cardElement);
+            });
+
+            clearInterval(timer);
+            startTime = new Date();
+            timer = setInterval(updateTimer, 1000);
+        }
+
+        function flipCard() {
+            const index = this.dataset.index;
+            if (flippedCards.length < 2 && !this.classList.contains('flipped')) {
+                this.classList.add('flipped');
+                this.innerHTML = getCardContent(cards[index]);
+                this.classList.add(isNaN(cards[index].text) ? 'word' : 'number');
+                flippedCards.push(index);
+
+                if (flippedCards.length === 2) {
+                    setTimeout(checkMatch, 1000);
+                }
+            }
+        }
+
+        function checkMatch() {
+            const [firstIndex, secondIndex] = flippedCards;
+            const firstCard = cards[firstIndex];
+            const secondCard = cards[secondIndex];
+
+            if ((firstCard.text === secondCard.number) || (firstCard.number === secondCard.text)) {
+                document.querySelectorAll('.card')[firstIndex].classList.add('match', 'hidden');
+                document.querySelectorAll('.card')[secondIndex].classList.add('match', 'hidden');
+                matchedCards += 2;
+
+                if (matchedCards === cards.length) {
+                    clearInterval(timer);
+                    const timeElapsed = Math.floor((new Date() - startTime) / 1000);
+                    const minutes = Math.floor(timeElapsed / 60);
+                    const seconds = timeElapsed % 60;
+                    alert(`Congratulations! You have matched all pairs in ${minutes}:${seconds < 10 ? '0' : ''}${seconds} minutes!`);
+                }
+            } else {
+                document.querySelectorAll('.card')[firstIndex].classList.remove('flipped', 'word', 'number');
+                document.querySelectorAll('.card')[secondIndex].classList.remove('flipped', 'word', 'number');
+                document.querySelectorAll('.card')[firstIndex].innerHTML = '';
+                document.querySelectorAll('.card')[secondIndex].innerHTML = '';
+            }
+            flippedCards = [];
+        }
+
+        function updateTimer() {
+            const timeElapsed = Math.floor((new Date() - startTime) / 1000);
+            const minutes = Math.floor(timeElapsed / 60);
+            const seconds = timeElapsed % 60;
+            document.getElementById('timer').textContent = `Time elapsed: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        }
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const themeToggle = document.getElementById('theme-toggle');
+            themeToggle.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+        }
+
+        function showHint() {
+            if (hintCount > 0) {
+                hintCount--;
+                document.getElementById('hint').textContent = `💡 (${hintCount})`;
+
+                let card1, card2;
+
+                if (flippedCards.length === 1) {
+                    const firstCardIndex = flippedCards[0];
+                    const firstCard = cards[firstCardIndex];
+                    card2 = cards.findIndex(card => card.text === firstCard.number || card.number === firstCard.text);
+                    card1 = firstCardIndex;
+                } else {
+                    const pair = findRandomMatchingPair();
+                    card1 = pair[0];
+                    card2 = pair[1];
+                }
+
+                const cardElements = document.querySelectorAll('.card');
+                cardElements[card1].classList.add('flashed');
+                cardElements[card1].classList.add('flipped');
+                cardElements[card1].innerHTML = getCardContent(cards[card1]);
+                cardElements[card2].classList.add('flashed');
+                cardElements[card2].classList.add('flipped');
+                cardElements[card2].innerHTML = getCardContent(cards[card2]);
+
+                setTimeout(() => {
+                    if (!cardElements[card1].classList.contains('match')) {
+                        cardElements[card1].classList.remove('flashed');
+                        cardElements[card1].classList.remove('flipped');
+                        cardElements[card1].innerHTML = '';
+                    }
+                    if (!cardElements[card2].classList.contains('match')) {
+                        cardElements[card2].classList.remove('flashed');
+                        cardElements[card2].classList.remove('flipped');
+                        cardElements[card2].innerHTML = '';
+                    }
+                }, 1000);
+            }
+        }
+
+        function findRandomMatchingPair() {
+            const unflippedCards = cards.filter((_, index) => !document.querySelectorAll('.card')[index].classList.contains('flipped'));
+            const index1 = Math.floor(Math.random() * unflippedCards.length);
+            const card1 = unflippedCards[index1];
+            const index2 = unflippedCards.findIndex(card => card.text === card1.number || card.number === card1.text);
+            return [cards.indexOf(card1), cards.indexOf(unflippedCards[index2])];
+        }
+
+        function changeDifficulty() {
+            difficulty = prompt("Enter difficulty level (number of pairs, 10 for Easy, 15 for Medium, 20 for Hard):");
+            difficulty = parseInt(difficulty);
+            if (isNaN(difficulty) || difficulty < 1 || difficulty > 20) {
+                difficulty = 20;
+            }
+            startGame();
+        }
+
+        function getCardContent(card) {
+            return `<div class="icon"><i class="fas ${card.icon}"></i></div><div>${card.text}</div>`;
+        }
+
+        document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+        document.getElementById('hint').addEventListener('click', showHint);
+        document.getElementById('difficulty').addEventListener('click', changeDifficulty);
+
+        startGame();
+    </script>
+</body>
+</html>
 
