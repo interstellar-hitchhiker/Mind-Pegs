@@ -1,5 +1,5 @@
 
-https://interstellar-hitchhiker.github.io/mind-pegs/
+[https://interstellar-hitchhiker.github.io/mind-pegs/](https://interstellar-hitchhiker.github.io/Mind-Pegs/)
 
 In the memory matching game, players use "mind pegs" and "mnemonics" to enhance their memory recall and make gameplay more enjoyable. Here's how these techniques work and how they benefit the gaming experience:
 
